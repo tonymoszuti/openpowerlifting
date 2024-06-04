@@ -1,53 +1,9 @@
-from psycopg2 import connect, DatabaseError
 import pandas as pd
-from transformers import AutoTokenizer, AutoModelForCausalLM, DataCollatorForSeq2Seq
-from torch.utils.data import Dataset, DataLoader
 import torch
-
-
-
-def connect_to_postgres():
-    try:
-        # Establishing the connection
-        connection = connect(
-            dbname="openpowerlifting",
-            user="admin",
-            password="admin",
-            #host="postgres-db",
-            host="localhost",
-            port="5432"
-        )
-        
-        print("Connection to PostgreSQL DB successful")
-
-        return connection
-
-    except (Exception, DatabaseError) as error:
-        print(f"Error: {error}")
-        return None
-
-
-if __name__ == "__main__":
-    # Connect to the database
-    conn = connect_to_postgres()
-
-    if conn:
-        try:
-            # Define the SQL query
-            query = "SELECT * FROM powerlifting_results_final"
-
-            # Load data into a pandas DataFrame
-            df = pd.read_sql(query, conn)
-
-        except Exception as e:
-            print(f"Error executing query: {e}")
-
-        finally:
-            # Close the database connection
-            conn.close()
-
+from torch.utils.data import Dataset, DataLoader
+from transformers import AutoTokenizer, AutoModelForCausalLM, DataCollatorForSeq2Seq
 # Load the CSV file containing the example SQL queries and natural language questions
-df = pd.read_csv("sql_training_data.csv")
+df = pd.read_csv("./sql_training_data.csv")  # Ensure the correct path
 
 # Extract the queries and labels from the DataFrame
 queries = df["question"].tolist()
@@ -60,9 +16,13 @@ tokenizer.add_special_tokens({'pad_token': '[PAD]'})  # Adding padding token
 model = AutoModelForCausalLM.from_pretrained("defog/llama-3-sqlcoder-8b")
 model.resize_token_embeddings(len(tokenizer))  # Resize embeddings in case new tokens were added
 
+
+max_len = 128 ### adjust as desired, always powers of 2 (max possible is 512)
+              ### I lowered it to run faster
+
 # Tokenize queries and labels
-tokenized_queries = tokenizer(queries, truncation=True, padding=True, max_length=512, return_tensors="pt")
-tokenized_labels = tokenizer(labels, truncation=True, padding=True, max_length=512, return_tensors="pt")
+tokenized_queries = tokenizer(queries, truncation=True, padding='max_length', max_length=max_len, return_tensors="pt")
+tokenized_labels = tokenizer(labels, truncation=True, padding='max_length', max_length=max_len, return_tensors="pt")
 
 # Define a custom dataset class
 class SQLDataset(Dataset):
@@ -79,7 +39,10 @@ class SQLDataset(Dataset):
         label_input_ids = self.labels["input_ids"][idx]
 
         # Shift labels to the right
-        labels = torch.cat([torch.tensor([tokenizer.pad_token_id]), label_input_ids[:-1]])
+        # Shift labels to the right manually
+        labels = torch.zeros_like(label_input_ids)
+        labels[1:] = label_input_ids[:-1]
+        labels[0] = tokenizer.pad_token_id
         
         return {
             "input_ids": query_input_ids, 
@@ -101,6 +64,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
 for epoch in range(5):
+    total_loss = 0
     for batch in train_loader:
         optimizer.zero_grad()
         input_ids = batch["input_ids"].to(device)
@@ -111,6 +75,10 @@ for epoch in range(5):
         loss = outputs.loss
         loss.backward()
         optimizer.step()
-
+        
+        total_loss += loss.item()
+    
+    print(f"Epoch {epoch + 1}, Loss: {total_loss / len(train_loader)}")
+ 
 # Save the fine-tuned model
 model.save_pretrained("fine_tuned_sqlcoder3b")
