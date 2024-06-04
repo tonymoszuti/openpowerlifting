@@ -42,7 +42,7 @@ class SQLDataset(Dataset):
         # Shift labels to the right manually
         labels = torch.zeros_like(label_input_ids)
         labels[1:] = label_input_ids[:-1]
-        labels[0] = tokenizer.pad_token_id
+        labels[0] = tokenizer.pad_token_id 
         
         return {
             "input_ids": query_input_ids, 
