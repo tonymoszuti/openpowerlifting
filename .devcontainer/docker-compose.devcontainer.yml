@@ -1,0 +1,13 @@
+version: '3.9'
+
+services:
+  dev:
+    image: mcr.microsoft.com/devcontainers/python:3.10-bookworm
+    command: sleep infinity
+    volumes:
+      - ..:/workspace
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+networks:
+    default:
+      name: open_powerlifting_network
