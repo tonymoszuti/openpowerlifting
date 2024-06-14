@@ -6,9 +6,21 @@ from peft import PeftModel, PeftConfig, get_peft_model, LoraConfig
 import evaluate
 import numpy as np
 from tqdm.auto import tqdm 
+from bitsandbytes import BitsAndBytesConfig
 
-# Load the model without bitsandbytes and quantization
-model = AutoModelForCausalLM.from_pretrained("bigcode/starcoder2-3b")
+# Define BitsAndBytesConfig
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=torch.bfloat16,
+)
+
+# Load the model with bitsandbytes and quantization
+model = AutoModelForCausalLM.from_pretrained(
+    "bigcode/starcoder2-3b",
+    quantization_config=bnb_config,
+    device_map={"": PartialState().process_index}
+)
 
 # Load SQL part of Stack Smol dataset
 stack_smol_dataset = load_dataset("bigcode/the-stack-smol", data_dir="data/sql")
