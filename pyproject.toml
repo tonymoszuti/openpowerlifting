@@ -28,6 +28,7 @@ peft = "0.11.1"
 evaluate = "0.4.2"
 trl = "0.9.4"
 wandb = "0.17.1"
+gradio = "4.36.1"
 
 [build-system]
 requires = ["poetry-core"]
