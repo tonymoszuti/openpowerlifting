@@ -3,17 +3,47 @@ import ast
 from datetime import datetime
 from db_utils import db
 from langchain_core.tools import Tool
+import logging
+from sqlalchemy import text
 
 
-def run_query_save_results(query):
-    res = db.run(query)
-    res = [el for sub in ast.literal_eval(res) for el in sub]
-    return res
+def run_query_save_results(query: str) -> list:
+    try:
+        # Run the query
+        res = db.run(query)
+        
+        # Check if the result is not None
+        if res is None:
+            logging.warning("Query returned no results.")
+            return []
+
+        # Parse the result safely
+        try:
+            result_data = ast.literal_eval(res)
+        except (ValueError, SyntaxError) as e:
+            logging.error(f"Error parsing result data: {e}")
+            return []
+
+        # Flatten the list of results
+        flattened_results = [el for sub in result_data for el in sub]
+        return flattened_results
+    
+    except Exception as e:
+        # Log the error with details
+        logging.error(f"Error running query '{query}': {e}")
+        return []
 
 def get_distinct_values(column_name: str) -> str:
-    query = f"SELECT DISTINCT {column_name} FROM powerlifting_results_final"
-    results = run_query_save_results(db, query)
-    return json.dumps(results)
+    sql_query = text(f"SELECT DISTINCT {column_name} FROM powerlifting_results_final")
+    
+    try:
+        results = db.execute(sql_query)
+        results = [el for sub in results.fetchall() for el in sub]
+        return json.dumps(results)
+    except Exception as e:
+        logging.error(f"Error executing query: {e}")
+        return json.dumps([])
+
 
 def get_today_date(query: str) -> str:
     today_date_string = datetime.now().strftime("%Y-%m-%d")
@@ -65,9 +95,25 @@ def get_columns_descriptions(query: str) -> str:
     return json.dumps(COLUMNS_DESCRIPTIONS)
 
 def fetch_strongest_lifter_by_weight_class(weight_class: str, position: int = 1) -> str:
-    sql_query = "SELECT name, totalkg FROM powerlifting_results_final WHERE weightclasskg = '{weight_class}' ORDER BY totalkg DESC NULLS LAST OFFSET {position - 1} LIMIT 1;"
-    results = run_query_save_results(sql_query)
-    return json.dumps(results)
+    # Use parameterized query to prevent SQL injection
+    sql_query = text("""
+        SELECT name, totalkg 
+        FROM powerlifting_results_final 
+        WHERE weightclasskg = :weight_class 
+        ORDER BY totalkg DESC NULLS LAST 
+        OFFSET :position - 1 
+        LIMIT 1;
+    """)
+    
+    # Execute the query with parameters
+    try:
+        results = db.execute(sql_query, {'weight_class': weight_class, 'position': position})
+        results = [el for sub in results.fetchall() for el in sub]
+        return json.dumps(results)
+    except Exception as e:
+        logging.error(f"Error executing query: {e}")
+        return json.dumps([])
+
 
 def get_weight_classes(query: str) -> str:
     query = "SELECT DISTINCT weightclasskg FROM powerlifting_results_final ORDER BY weightclasskg;"
@@ -76,10 +122,10 @@ def get_weight_classes(query: str) -> str:
 
 def sql_agent_tools():
     tools = [
-        Tool.from_function(
-            func=lambda query: get_distinct_values("weight_class"),
-            name="get_weight_classes",
-            description="Fetches distinct weight classes from the powerlifting results table."
+         Tool.from_function(
+            func=get_distinct_values,  # General tool for fetching distinct values from any column
+            name="get_distinct_values",
+            description="Fetches distinct values from the specified column in the powerlifting results table. The query should contain the column name."
         ),
         Tool.from_function(
             func=get_today_date,
@@ -99,7 +145,7 @@ def sql_agent_tools():
         Tool.from_function(
             func=get_weight_classes,
             name="get_weight_classes",
-            description="Provides the weight classes."
+            description="Fetches distinct weight classes from the powerlifting results table."
         ),
     
     ]

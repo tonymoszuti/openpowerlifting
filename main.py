@@ -7,5 +7,5 @@ warnings.filterwarnings("ignore")
 agent = create_agent()
 
 # Example query to the agent
-response = agent.run("Who is the stronget 74kg lifter")
+response = agent.run("Who is the strongest 74kg lifter")
 print(response)
