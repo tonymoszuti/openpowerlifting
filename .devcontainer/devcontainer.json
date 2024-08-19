@@ -1,15 +1,16 @@
 {
 	"name": "open powerlifting",
-    "dockerComposeFile": [ 
-        "docker-compose.devcontainer.yml"
-    ],
-    "service": "dev",
-    "workspaceFolder": "/workspace",
-    "customizations": {
+	"dockerComposeFile": [
+		"docker-compose.devcontainer.yml"
+	],
+	"service": "dev",
+	"workspaceFolder": "/workspace",
+	"customizations": {
 		"vscode": {
 			"settings": {
 				"terminal.integrated.shell.linux": "/bin/bash"
 			}
 		}
 	},
+	"postCreateCommand": "./.devcontainer/postCreateCommand.sh"
 }
