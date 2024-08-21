@@ -1,3 +1,3 @@
 #!/bin/sh
-pip install -e ./[dev]
-./scripts/download_data.sh
+pip install -e ./openpowerlifting/[dev]
+./runtime/scripts/download_data.sh

@@ -20,7 +20,7 @@ mkdir -p "$UNZIP_DIR"
 # Unzip the data file
 unzip -l "$ZIP_FILE" | grep ".csv" | awk '{print $4}' | while read csv_file; do
     echo "Extracting $csv_file from $ZIP_FILE..."
-    unzip -j "$ZIP_FILE" "$csv_file" -d "$UNZIP_DIR"
+    unzip -o -j "$ZIP_FILE" "$csv_file" -d "$UNZIP_DIR"
 done
 
 # Check if the unzip was successful
