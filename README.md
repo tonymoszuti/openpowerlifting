@@ -119,3 +119,24 @@ The agent is equipped with several tools that allow it to perform various tasks:
 
 
 
+Create a .vscode folder and a launch.json file in there with this code:
+
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Open Powerlifting SQL Agent",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/python/src/openpowerlifting/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "env": {
+                "OPENAI_API_KEY": ""
+            }
+        },
+    ]
+}
