@@ -4,14 +4,13 @@ from langchain.agents.agent_types import AgentType
 from openpowerlifting.sql_tools import sql_agent_tools
 from langchain_community.agent_toolkits.sql.base import create_sql_agent
 from langchain_community.agent_toolkits.sql.base import SQLDatabaseToolkit
-from openpowerlifting.custom_suffix import CUSTOM_SUFFIX
-from openpowerlifting.db_utils import db
+from openpowerlifting.sql_agent_prompt import CUSTOM_SUFFIX
 from openpowerlifting.config import settings
-
+from openpowerlifting import sql_tools
 
 ### Creating the agent ###
 
-def create_agent(
+def create(
     tool_llm_name: str = settings.llm_model_name,
     agent_llm_name: str = settings.llm_model_name,
 ):
@@ -45,7 +44,7 @@ def get_chat_openai(model_name):
 
 def get_sql_toolkit(tool_llm_name: str):
     llm_tool = get_chat_openai(model_name=tool_llm_name)
-    toolkit = SQLDatabaseToolkit(db=db, llm=llm_tool)
+    toolkit = SQLDatabaseToolkit(db=sql_tools.db, llm=llm_tool)
     return toolkit
 
 def get_agent_llm(agent_llm_name: str):

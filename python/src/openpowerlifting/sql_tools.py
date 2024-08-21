@@ -1,11 +1,17 @@
 import json
 import ast
 from datetime import datetime
-from openpowerlifting.db_utils import db
 from langchain_core.tools import Tool
+from langchain_community.utilities.sql_database import SQLDatabase
+from openpowerlifting.config import settings
 import logging
 from sqlalchemy import text
 
+db = SQLDatabase.from_uri(
+    settings.database_url,
+    include_tables=settings.database_tables,
+    sample_rows_in_table_info=1,
+)
 
 def run_query_save_results(query: str) -> list:
     try:
@@ -37,7 +43,7 @@ def get_distinct_values(column_name: str) -> str:
     sql_query = text(f"SELECT DISTINCT {column_name} FROM powerlifting_results_final")
     
     try:
-        results = db.execute(sql_query)
+        results = db.run(sql_query)
         results = [el for sub in results.fetchall() for el in sub]
         return json.dumps(results)
     except Exception as e:
@@ -107,7 +113,7 @@ def fetch_strongest_lifter_by_weight_class(weight_class: str, position: int = 1)
     
     # Execute the query with parameters
     try:
-        results = db.execute(sql_query, {'weight_class': weight_class, 'position': position})
+        results = db.run(sql_query, {'weight_class': weight_class, 'position': position})
         results = [el for sub in results.fetchall() for el in sub]
         return json.dumps(results)
     except Exception as e:
