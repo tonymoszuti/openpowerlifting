@@ -1,0 +1,17 @@
+[development]
+database_host = "postgres-db"
+database_port = "5432"
+database_name = "openpowerlifting"
+database_tables = ["powerlifting_results_final"]
+llm_chat_kwargs = { temperature = 0.5, max_tokens = 2000, verbose = true }
+llm_chat_openai_model_kwargs = { top_p = 1.0, frequency_penalty = 0.0, presence_penalty = -1 }
+llm_model_name = "gpt-4o-mini"
+
+[production]
+database_host = ""
+database_port = ""
+database_name = ""
+database_tables = ["powerlifting_results_final"]
+llm_chat_kwargs = { temperature = 0.5, max_tokens = 2000, verbose = true }
+llm_chat_openai_model_kwargs = { top_p = 1.0, frequency_penalty = 0.0, presence_penalty = -1 }
+llm_model_name = "gpt-4o-mini"
