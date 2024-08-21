@@ -12,6 +12,8 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-}
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./runtime/postgresql/init:/docker-entrypoint-initdb.d
+      - ./runtime/postgresql/data:/tmp/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d ${POSTGRES_DB} -U ${POSTGRES_USER}"]
       interval: 5s
@@ -21,6 +23,7 @@ services:
       - open_powerlifting_network
     profiles:
       - base
+    entrypoint: ["sh", "-c", "chown -R postgres:postgres /tmp/data/ && exec docker-entrypoint.sh postgres"]
 volumes:
   pgdata:
     name: vol-postgres-db
@@ -28,3 +31,5 @@ networks:
   open_powerlifting_network:
     name: open_powerlifting_network
     external: true
+
+  
