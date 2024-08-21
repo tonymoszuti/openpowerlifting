@@ -1,4 +1,4 @@
-from create_agent import create_agent
+from openpowerlifting.create_agent import create_agent
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -8,4 +8,4 @@ agent = create_agent()
 
 # Example query to the agent
 response = agent.run("Who is the strongest 74kg lifter")
-print(response)
+print(response) 

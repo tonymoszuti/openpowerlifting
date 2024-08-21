@@ -1,12 +1,12 @@
 from langchain_community.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.agents.agent_types import AgentType
-from sql_tools import sql_agent_tools
+from openpowerlifting.sql_tools import sql_agent_tools
 from langchain_community.agent_toolkits.sql.base import create_sql_agent
 from langchain_community.agent_toolkits.sql.base import SQLDatabaseToolkit
-from custom_suffix import CUSTOM_SUFFIX
-from db_utils import db
-from config import chat_openai_model_kwargs, langchain_chat_kwargs
+from openpowerlifting.custom_suffix import CUSTOM_SUFFIX
+from openpowerlifting.db_utils import db
+from openpowerlifting.config import chat_openai_model_kwargs, langchain_chat_kwargs
 
 
 ### Creating the agent ###

@@ -1,7 +1,7 @@
 import json
 import ast
 from datetime import datetime
-from db_utils import db
+from openpowerlifting.db_utils import db
 from langchain_core.tools import Tool
 import logging
 from sqlalchemy import text

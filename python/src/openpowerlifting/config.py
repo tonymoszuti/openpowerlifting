@@ -1,7 +1,7 @@
 import os
 
 # Set API Key in xxxx
-os.environ["OPENAI_API_KEY"] = "xxxx"
+os.environ["OPENAI_API_KEY"] = ""
 
 # LLM Configuration
 langchain_chat_kwargs = {
